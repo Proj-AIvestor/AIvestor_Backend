@@ -37,5 +37,5 @@ out/
 .vscode/
 
 # important data
-.yml
+*.yml
 *.txt
