@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>AIvestor 뉴스레터</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { width: 80%; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .header { background-color: #f4f4f4; padding: 10px; text-align: center; border-bottom: 1px solid #ddd; }
+        .news-item { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px dashed #eee; }
+        .news-item:last-child { border-bottom: none; }
+        .news-title { font-size: 1.2em; font-weight: bold; color: #0056b3; }
+        .news-source { font-size: 0.9em; color: #666; margin-top: 5px; }
+        .company-info { margin-top: 10px; }
+        .company-info strong { color: #555; }
+        .footer { margin-top: 30px; text-align: center; font-size: 0.8em; color: #888; }
+        .button { display: inline-block; padding: 10px 20px; margin-top: 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>AIvestor 오늘의 주요 뉴스</h2>
+            <p th:text="${#temporals.format(T(java.time.LocalDate).now(), 'yyyy년 MM월 dd일')}"></p>
+        </div>
+
+        <div th:each="news : ${newsList}" class="news-item">
+            <p class="news-title" th:text="${news.title}"></p>
+            <p class="news-source" th:text="'출처: ' + ${news.source}"></p>
+            <div class="company-info" th:if="${news.companies != null and !news.companies.empty}">
+                <strong>관련 기업:</strong>
+                <ul>
+                    <li th:each="companyTicker : ${news.companies}">
+                        <span th:text="${companyTicker}"></span>
+                        <span th:if="${news.companiesInfo != null and news.companiesInfo.containsKey(companyTicker)}">
+                            (<span th:text="${news.companiesInfo.get(companyTicker).changePercent}"></span>%)
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>더 많은 뉴스를 보려면 AIvestor 웹사이트를 방문하세요.</p>
+            <a th:href="${frontUrl}" class="button">Aivestor 바로가기</a>
+            <p>&copy; <span th:text="${#dates.year(#dates.createNow())}"></span> Aivestor. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
