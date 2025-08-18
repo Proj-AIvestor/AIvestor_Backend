@@ -17,11 +17,14 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,8 +42,9 @@ public class NewsletterService {
     // 매일 오전 8시에 뉴스레터 발송 (예시)
     @Scheduled(cron = "0 0 9 * * *")
     public void sendDailyNewsletter() {
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        String date = yesterday.format(DateTimeFormatter.ISO_DATE);
+        LocalDate specificDate = LocalDate.of(2025, 7, 22);
+        LocalDate yesterday = LocalDate.now(); //.minusDays(1);
+        String date = specificDate.format(DateTimeFormatter.ISO_DATE);
         String apiUrl = newsletterProperties.getApi().getUrl() + "?date=" + date;
 
         Map<String, List<NewsData>> newsApiResponseMap = webClient.get()
@@ -74,19 +78,59 @@ public class NewsletterService {
         Context context = new Context();
         context.setVariable("newsList", newsList);
         context.setVariable("frontUrl", frontUrl);
-        return templateEngine.process("newsletter", context);
+        return templateEngine.process("newsletter2", context);
     }
 
     private void sendEmail(String to, String subject, String htmlContent) {
         MimeMessage message = mailSender.createMimeMessage();
         try {
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            // 네이버 메일 호환성을 위해 multipart=false로 설정 (단순 HTML 메시지)
+            MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
+
+            // 발송자 정보 설정 (필요시)
+            helper.setFrom("noreply@aivestor.com", "AIvestor");
+
             helper.setTo(to);
             helper.setSubject(subject);
+
+            // HTML 콘텐츠 설정
             helper.setText(htmlContent, true);
+
+            // 네이버 메일 호환성을 위한 명시적 헤더 설정
+            message.setHeader("Content-Type", "text/html; charset=UTF-8");
+            message.setHeader("Content-Transfer-Encoding", "base64");
+            message.setHeader("MIME-Version", "1.0");
+
+            // 추가 호환성 헤더
+            message.setHeader("X-Mailer", "AIvestor Newsletter System");
+
             mailSender.send(message);
+            log.info("이메일 발송 성공: {}", to);
         } catch (MessagingException e) {
             log.error("이메일 발송 실패: {}", e.getMessage());
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void addNewEmail(String email) {
+        Optional<User> existingUserOpt = userRepository.findByEmail(email);
+        if (existingUserOpt.isEmpty()) {
+            User newUser = new User();
+            newUser.setEmail(email);
+            newUser.setUsername(email);
+            newUser.setGetletter(true);
+            userRepository.save(newUser);
+            log.info("새로운 뉴스레터 구독 이메일 추가: {}", email);
+        } else {
+            User existingUser = existingUserOpt.get();
+            if (!existingUser.getGetletter()) {
+                existingUser.setGetletter(true);
+                userRepository.save(existingUser);
+                log.info("기존 사용자 뉴스레터 구독 상태 업데이트: {}", email);
+            } else {
+                log.info("이미 뉴스레터를 구독 중인 이메일: {}", email);
+            }
         }
     }
 }

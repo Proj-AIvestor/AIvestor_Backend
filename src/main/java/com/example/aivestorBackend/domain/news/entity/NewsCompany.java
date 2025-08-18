@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode; // Added
 
 import java.io.Serializable;
 
@@ -29,6 +30,7 @@ public class NewsCompany {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
+    @EqualsAndHashCode // Added
     public static class NewsCompanyId implements Serializable {
         private Long newsId;
         private String company;

@@ -32,7 +32,7 @@ public class SlackService {
     @Value("${slack.channel.test_channel}")
     private String testChannel;
 
-    @Value("slack.channel.lab_hangout_channel")
+    @Value("${slack.channel.lab_hangout_channel}")
     private String labHangoutChannel;
 
     @Value("${flask.api.url}")
@@ -45,7 +45,7 @@ public class SlackService {
     private final WebClient.Builder webClientBuilder;
 
     public void sendTopNews() throws IOException, SlackApiException {
-        LocalDate testDate = LocalDate.parse("2025-07-04");
+        LocalDate testDate = LocalDate.now();
 
         NewsApiResponseDto newsApiResponse = fetchNewsFromApi(testDate);
         List<LayoutBlock> blocks = buildSlackMessageBlocks(newsApiResponse);
@@ -54,7 +54,7 @@ public class SlackService {
 
     private NewsApiResponseDto fetchNewsFromApi(LocalDate date) {
         String formattedDate = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
-
+        String testDate = "2025-07-22";
         NewsApiResponseDto newsApiResponse = webClientBuilder.build()
                 .get()
                 .uri(flaskApiUrl, uriBuilder -> uriBuilder.queryParam("date", formattedDate).build())
@@ -90,20 +90,13 @@ public class SlackService {
             blocks.add(new DividerBlock());
 
             for (NewsDataDto news : newsList) {
-                String companiesInfo = news.getCompanies().stream()
-                        .map(company -> {
-                            CompanyInfoDto info = news.getCompaniesInfo().get(company);
-                            if (info == null) return "";
-                            String arrow = info.isPositive() ? ":chart_with_upwards_trend:" : ":chart_with_downwards_trend:";
-                            return String.format("( %s %s%s%% )", company, arrow, info.getChangePercent());
-                        })
-                        .collect(Collectors.joining(" "));
+                String companiesInfo = buildCompaniesInfoText(news);
 
                 String mdText = String.join("\n",
                         String.format("*<%s|%s>*", news.getUrl(), news.getTitle()),
                         String.format(">%s", news.getSummary()),
                         String.format("*Source*: %s", news.getSource()),
-                        String.format("*Related Stocks*: %s", companiesInfo)
+                        String.format("*Related Stocks* %n%s", companiesInfo)
                 );
 
                 blocks.add(SectionBlock.builder()
@@ -114,13 +107,30 @@ public class SlackService {
         return blocks;
     }
 
+    private String buildCompaniesInfoText(NewsDataDto news) {
+        if (news.getCompanies() == null || news.getCompanies().isEmpty()) {
+            return "N/A";
+        }
+        return news.getCompanies().stream()
+                .map(company -> {
+                    CompanyInfoDto info = news.getCompaniesInfo().get(company);
+                    if (info == null) {
+                        return String.format("• %s", company);
+                    }
+
+                    String arrow = info.isPositive() ? ":chart_with_upwards_trend:" : ":chart_with_downwards_trend:";
+                    return String.format("• %s %s %s%%", company, arrow, info.getChangePercent());
+                })
+                .collect(Collectors.joining("\n"));
+    }
+
     private void sendMessage(List<LayoutBlock> blocks) throws SlackApiException, IOException {
         if (blocks.isEmpty()) {
             return; // No news to send
         }
 
         ChatPostMessageResponse resp = client.chatPostMessage(r -> r
-                .channel(testChannel)
+                .channel(labHangoutChannel)
                 .blocks(blocks)
         );
 

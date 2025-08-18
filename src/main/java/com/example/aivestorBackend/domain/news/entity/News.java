@@ -3,7 +3,7 @@ package com.example.aivestorBackend.domain.news.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.data.relational.core.mapping.Table;
+
 
 import java.time.LocalDate;
 import java.util.ArrayList;

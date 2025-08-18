@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIvestor 뉴스레터</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9f9f9;">
+<!-- 최대한 단순한 테이블 구조로 변경 -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f9f9f9; margin: 0; padding: 20px;">
+    <tr>
+        <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; background-color: #ffffff; border: 1px solid #ddd;">
+                <!-- 헤더 -->
+                <tr>
+                    <td style="background-color: #f4f4f4; padding: 20px; text-align: center; border-bottom: 1px solid #ddd;">
+                        <h2 style="margin: 0; color: #333; font-size: 24px; font-weight: bold;">AIvestor 오늘의 주요 뉴스</h2>
+                        <p style="margin: 10px 0 0 0; color: #666; font-size: 16px;" th:text="${#temporals.format(T(java.time.LocalDate).now(), 'yyyy년 MM월 dd일')}">2025년 08월 05일</p>
+                    </td>
+                </tr>
+
+                <!-- 뉴스 콘텐츠 -->
+                <tr>
+                    <td style="padding: 20px;">
+                        <!-- Thymeleaf 반복문으로 뉴스 아이템들 -->
+                        <div th:each="news, iterStat : ${newsList}">
+                            <!-- 마지막 아이템이 아니면 하단 보더 추가 -->
+                            <div th:style="${iterStat.last} ? 'margin-bottom: 25px;' : 'margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px dashed #eee;'">
+                                <h3 style="margin: 0 0 10px 0; font-size: 18px; font-weight: bold; color: #0056b3; line-height: 1.4;" th:text="${news.title}">뉴스 제목</h3>
+                                <p style="margin: 0 0 10px 0; font-size: 14px; color: #666;" th:text="'출처: ' + ${news.source}">출처: Reuters</p>
+
+                                <!-- 관련 기업 정보 -->
+                                <div th:if="${news.companies != null and !news.companies.empty}" style="margin-top: 15px;">
+                                    <p style="margin: 0 0 8px 0; font-weight: bold; color: #555; font-size: 14px;">관련 기업:</p>
+                                    <ul style="margin: 0; padding-left: 20px; color: #333;">
+                                        <li th:each="companyTicker : ${news.companies}" style="margin-bottom: 5px; font-size: 14px;">
+                                            <span th:text="${companyTicker}">Company</span>
+                                            <span th:if="${news.companiesInfo != null and news.companiesInfo.containsKey(companyTicker)}"
+                                                  th:style="${news.companiesInfo.get(companyTicker).changePercent.startsWith('+')} ? 'color: #007bff; font-weight: bold;' : 'color: #dc3545; font-weight: bold;'">
+                                                    (<span th:text="${news.companiesInfo.get(companyTicker).changePercent}">+0.57</span>%)
+                                                </span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- 푸터 -->
+                <tr>
+                    <td style="padding: 20px; text-align: center; background-color: #f8f9fa; border-top: 1px solid #dee2e6;">
+                        <p style="margin: 0 0 15px 0; font-size: 14px; color: #666;">더 많은 뉴스를 보려면 AIvestor 웹사이트를 방문하세요.</p>
+
+                        <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                            <tr>
+                                <td style="background-color: #007bff; padding: 12px 24px;">
+                                    <a th:href="${frontUrl}" href="#" style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 16px; display: block;">AIvestor 바로가기</a>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="margin: 20px 0 0 0; font-size: 12px; color: #888;">
+                            &copy; <span th:text="${#dates.year(#dates.createNow())}">2025</span> Aivestor. All rights reserved.
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

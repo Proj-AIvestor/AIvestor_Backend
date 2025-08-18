@@ -17,6 +17,6 @@ public class SlackConfig {
 
     @Bean
     public MethodsClient methodsClient() {
-        return Slack.getInstance().methods(botToken);
+        return Slack.getInstance().methods(labBotToken);
     }
 }

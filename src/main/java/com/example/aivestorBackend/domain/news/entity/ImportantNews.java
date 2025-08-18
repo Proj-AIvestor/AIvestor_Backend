@@ -23,11 +23,14 @@ public class ImportantNews {
 
     private String topic;
 
-    @Column(name = "news_date", nullable = false)
+    @Column(name = "publication_date", nullable = false)
     private LocalDate newsDate;
 
     @Column(name = "thumbnail_url")
     private String thumbnailUrl;
+
+    @Column(name = "tts_url")
+    private String ttsUrl;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "news_id", insertable = false, updatable = false)
