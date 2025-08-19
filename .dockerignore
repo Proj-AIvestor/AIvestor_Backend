@@ -1,0 +1,21 @@
+# AIvestor_Backend/.dockerignore
+.git
+.gitignore
+.gradle
+build/
+!build/libs
+.idea
+*.iml
+*.iws
+*.ipr
+out/
+.DS_Store
+*.log
+.env
+.env.*
+bin/
+.settings/
+.project
+.classpath
+HELP.md
+README.md

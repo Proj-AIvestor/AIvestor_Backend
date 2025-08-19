@@ -1,5 +1,6 @@
 package com.example.aivestorBackend.domain.news.service;
 
+import org.springframework.transaction.annotation.Transactional;
 import com.example.aivestorBackend.domain.news.config.NewsProperties;
 import com.example.aivestorBackend.domain.news.dto.response.NewsDetailsDto;
 import com.example.aivestorBackend.domain.news.dto.response.NewsDto;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class NewsService {
     private final ImportantNewsRepository importantNewsRepository;
